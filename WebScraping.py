@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import csv
 import time
 import os
+import re
 
 # Fungsi untuk scraping data dari setiap halaman
 def scrape_books_from_page(url):
@@ -107,24 +108,42 @@ def scrape_product_details(url):
 
     return {'description': description, 'product_info': product_info}
 
+# Fungsi untuk sanitasi nama folder atau file (menghilangkan karakter yang tidak valid)
+def sanitize_filename(name):
+    return re.sub(r'[<>:"/\\|?*]', '_', name)
+
 # Fungsi untuk menyimpan gambar ke dalam folder berdasarkan kategori
 def save_image(image_url, title, category):
     try:
-        img_data = requests.get(image_url).content
-        category_folder = f"images/category/{category}"
+        # Cek apakah category diambil dengan benar
+        print(f"Category: {category}")  # Debugging category
+        
+        # Sanitasi nama kategori dan judul buku
+        sanitized_category = sanitize_filename(category)
+        sanitized_title = sanitize_filename(title)
+
+        # Tentukan path folder berdasarkan kategori yang sudah disanitasi
+        category_folder = os.path.join("images", "category", sanitized_category)
+
+        # Debugging path folder yang akan dibuat
+        print(f"Saving image in folder: {category_folder}")  # Debugging folder path
 
         # Buat folder kategori jika belum ada
         if not os.path.exists(category_folder):
             os.makedirs(category_folder)
 
-        # Menggunakan nama buku sebagai nama file gambar
-        image_filename = os.path.join(category_folder, f"{title}.jpg")
+        # Tentukan nama file gambar
+        image_filename = os.path.join(category_folder, f"{sanitized_title}.jpg")
+
+        # Debugging nama file yang akan disimpan
+        print(f"Saving image as: {image_filename}")  # Debugging file path
 
         # Menyimpan gambar
+        img_data = requests.get(image_url).content
         with open(image_filename, 'wb') as img_file:
             img_file.write(img_data)
 
-        print(f"Image saved for {title} in category {category}")
+        print(f"Image saved for {sanitized_title} in category {sanitized_category}")
     except Exception as e:
         print(f"Error saving image for {title}: {e}")
 
@@ -160,6 +179,6 @@ def save_to_csv(data, filename):
 
 if __name__ == "__main__":
     base_url = 'https://books.toscrape.com/'
-    total_pages = 5  # Ubah ini sesuai dengan jumlah halaman yang ingin di-scrape
+    total_pages = 3  # Ubah ini sesuai dengan jumlah halaman yang ingin di-scrape
     books_data = scrape_multiple_pages(base_url, total_pages)
     save_to_csv(books_data, 'books_data.csv')
