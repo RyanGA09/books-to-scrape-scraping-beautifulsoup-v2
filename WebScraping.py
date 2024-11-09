@@ -123,7 +123,7 @@ def save_image(image_url, title, category):
         sanitized_title = sanitize_filename(title)
 
         # Tentukan path folder berdasarkan kategori yang sudah disanitasi
-        category_folder = os.path.join("images", "category", sanitized_category)
+        category_folder = os.path.join("images", sanitized_category)
 
         # Debugging path folder yang akan dibuat
         print(f"Saving image in folder: {category_folder}")  # Memastikan folder yang akan dibuat
@@ -178,7 +178,7 @@ def save_to_csv(data, filename):
     print(f"Data saved to {filename}")
 
 if __name__ == "__main__":
-    base_url = 'https://books.toscrape.com/'
-    total_pages = 3  # Ubah ini sesuai dengan jumlah halaman yang ingin di-scrape
-    books_data = scrape_multiple_pages(base_url, total_pages)
-    save_to_csv(books_data, 'books_data.csv')
+    base_url = 'https://books.toscrape.com/'  # URL dasar dari website
+    total_pages = 3  # Ubah sesuai jumlah halaman yang ingin di-scrape
+    books_data = scrape_multiple_pages(base_url, total_pages)  # Scrape beberapa halaman
+    save_to_csv(books_data, 'books_data.csv')  # Simpan hasil ke CSV
