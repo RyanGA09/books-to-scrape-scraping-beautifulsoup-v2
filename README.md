@@ -11,7 +11,7 @@
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/RyanGA09/books-to-scrape-scraping-v1.git
+   git clone https://github.com/RyanGA09/books-to-scrape-scraping-v2.git
    ```
 
 2. Navigate to the project directory:
