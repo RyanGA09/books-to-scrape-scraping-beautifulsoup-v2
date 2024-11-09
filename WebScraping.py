@@ -123,7 +123,7 @@ def save_image(image_url, title, category):
         sanitized_title = sanitize_filename(title)
 
         # Tentukan path folder berdasarkan kategori yang sudah disanitasi
-        category_folder = os.path.join("images", sanitized_category)
+        category_folder = os.path.join("images", "category", sanitized_category)
 
         # Debugging path folder yang akan dibuat
         print(f"Saving image in folder: {category_folder}")  # Memastikan folder yang akan dibuat
