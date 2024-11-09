@@ -1,5 +1,7 @@
 # Books to Scrape - Scraping: Advanced Version (V2)
 
+This is a simple Python script to scrape book data from [Books to Scrape](https://books.toscrape.com/), a website that provides a collection of books. The scraper collects details about the books, including titles, prices, ratings, availability, and cover image URLs. It stores the data into a CSV file.
+
 ## Features
 
 - Scrapes book, such as titles, prices, ratings, availability, and cover image URLs from the site [Books to Scrape](https://books.toscrape.com/).
