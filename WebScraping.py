@@ -14,7 +14,7 @@ def scrape_books_from_page(url):
         print(f"Error: {e}")
         return []
 
-    soup = BeautifulSoup(response.text, 'html.parser')
+    soup = BeautifulSoup(response.text, 'html.parser')  # Menggunakan built-in html.parser
 
     # Mengambil semua buku
     books = soup.find_all('article', class_='product_pod')
@@ -43,7 +43,7 @@ def scrape_books_from_page(url):
         # Mengambil URL halaman detail buku
         book_link = 'https://books.toscrape.com/catalogue/' + book.h3.a['href'].replace('../../../', '')
 
-        # Mengambil kategori buku
+        # Mengambil kategori buku (menggunakan BeautifulSoup)
         category = book.find_previous('ul', class_='breadcrumb').find_all('li')[-2].text.strip()
 
         # Mengambil product description dan product information
@@ -87,7 +87,7 @@ def scrape_product_details(url):
         print(f"Error: {e}")
         return {'description': '', 'product_info': {}}
 
-    soup = BeautifulSoup(response.text, 'html.parser')
+    soup = BeautifulSoup(response.text, 'html.parser')  # Menggunakan html.parser (built-in)
 
     # Mengambil deskripsi produk
     description = soup.find('meta', {'name': 'description'})
@@ -115,8 +115,8 @@ def sanitize_filename(name):
 # Fungsi untuk menyimpan gambar ke dalam folder berdasarkan kategori
 def save_image(image_url, title, category):
     try:
-        # Cek apakah category diambil dengan benar
-        print(f"Category: {category}")  # Debugging category
+        # Debugging kategori
+        print(f"Category: {category}")  # Memastikan kategori yang diambil benar
         
         # Sanitasi nama kategori dan judul buku
         sanitized_category = sanitize_filename(category)
@@ -126,7 +126,7 @@ def save_image(image_url, title, category):
         category_folder = os.path.join("images", "category", sanitized_category)
 
         # Debugging path folder yang akan dibuat
-        print(f"Saving image in folder: {category_folder}")  # Debugging folder path
+        print(f"Saving image in folder: {category_folder}")  # Memastikan folder yang akan dibuat
 
         # Buat folder kategori jika belum ada
         if not os.path.exists(category_folder):
@@ -135,8 +135,8 @@ def save_image(image_url, title, category):
         # Tentukan nama file gambar
         image_filename = os.path.join(category_folder, f"{sanitized_title}.jpg")
 
-        # Debugging nama file yang akan disimpan
-        print(f"Saving image as: {image_filename}")  # Debugging file path
+        # Debugging nama file gambar yang akan disimpan
+        print(f"Saving image as: {image_filename}")  # Memastikan nama file gambar yang akan disimpan
 
         # Menyimpan gambar
         img_data = requests.get(image_url).content
