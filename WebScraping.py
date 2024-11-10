@@ -1,11 +1,11 @@
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup as BfS4
 import csv
 import time
 import os
-import re
+from WebImageScraping import save_image  # Mengimpor fungsi save_image dari ImageScraper.py
 
-# Fungsi untuk scraping data dari setiap halaman
+# Fungsi untuk scraping data dari setiap halaman buku
 def scrape_books_from_page(url):
     try:
         response = requests.get(url)
@@ -14,7 +14,7 @@ def scrape_books_from_page(url):
         print(f"Error: {e}")
         return []
 
-    soup = BeautifulSoup(response.text, 'html.parser')  # Menggunakan built-in html.parser
+    soup = BfS4(response.text, 'html.parser')  # Menggunakan built-in html.parser
 
     # Mengambil semua buku
     books = soup.find_all('article', class_='product_pod')
@@ -52,18 +52,20 @@ def scrape_books_from_page(url):
         # Menyimpan data buku dalam bentuk dictionary
         book_data.append({
             'Title': title,
-            'Price': price,
-            'Availability': availability,
-            'Rating': rating,
-            'Image URL': image_url,
-            'Product Description': product_details['description'],
-            'Product Information': product_details['product_info'],
+            'price': price,
+            'Price including tax': product_details['price_incl_tax'],
+            'Price excluding tax': product_details['price_excl_tax'],
+            'Price Tax': product_details['price_tax'],
+            'Number available': product_details['availability'],
+            'Category': category,
             'Link': book_link,
-            'Category': category
+            'Rating': rating,
+            'Product Description': product_details['description'],
+            'Image URL': image_url
         })
 
-        # Menyimpan gambar
-        save_image(image_url, title, category)
+        # # Menyimpan gambar menggunakan fungsi dari ImageScraper.py
+        # save_image(image_url, title, category)
 
     return book_data
 
@@ -85,67 +87,29 @@ def scrape_product_details(url):
         response.raise_for_status()  # Memeriksa apakah permintaan berhasil
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
-        return {'description': '', 'product_info': {}}
+        return {'description': '', 'price_incl_tax': '', 'price_excl_tax': '', 'price_tax': '', 'availability': ''}
 
-    soup = BeautifulSoup(response.text, 'html.parser')  # Menggunakan html.parser (built-in)
+    soup = BfS4(response.text, 'html.parser')  # Menggunakan html.parser (built-in)
 
     # Mengambil deskripsi produk
     description = soup.find('meta', {'name': 'description'})
     description = description['content'] if description else 'No description available'
 
-    # Mengambil informasi produk (UPC, Product Type, Price, Tax, Number of Reviews)
-    product_info = {}
-    table = soup.find('table', class_='table table-striped')
-    if table:
-        rows = table.find_all('tr')
-        for row in rows:
-            cols = row.find_all('td')
-            if len(cols) > 1:
-                product_info[cols[0].text.strip()] = cols[1].text.strip()
+    # Mengambil harga produk (price including tax, price excluding tax, price tax)
+    price_incl_tax = soup.find('th', text='Price (incl. tax)').find_next_sibling('td').text
+    price_excl_tax = soup.find('th', text='Price (excl. tax)').find_next_sibling('td').text
+    price_tax = soup.find('th', text='Tax').find_next_sibling('td').text
 
-    # Menambahkan Availability ke Product Information
-    product_info['Availability'] = soup.find('p', class_='instock availability').text.strip()
+    # Mengambil informasi ketersediaan produk
+    availability = soup.find('p', class_='instock availability').text.strip()
 
-    return {'description': description, 'product_info': product_info}
-
-# Fungsi untuk sanitasi nama folder atau file (menghilangkan karakter yang tidak valid)
-def sanitize_filename(name):
-    return re.sub(r'[<>:"/\\|?*]', '_', name)
-
-# Fungsi untuk menyimpan gambar ke dalam folder berdasarkan kategori
-def save_image(image_url, title, category):
-    try:
-        # Debugging kategori
-        print(f"Category: {category}")  # Memastikan kategori yang diambil benar
-        
-        # Sanitasi nama kategori dan judul buku
-        sanitized_category = sanitize_filename(category)
-        sanitized_title = sanitize_filename(title)
-
-        # Tentukan path folder berdasarkan kategori yang sudah disanitasi
-        category_folder = os.path.join("images", "category", sanitized_category)
-
-        # Debugging path folder yang akan dibuat
-        print(f"Saving image in folder: {category_folder}")  # Memastikan folder yang akan dibuat
-
-        # Buat folder kategori jika belum ada
-        if not os.path.exists(category_folder):
-            os.makedirs(category_folder)
-
-        # Tentukan nama file gambar
-        image_filename = os.path.join(category_folder, f"{sanitized_title}.jpg")
-
-        # Debugging nama file gambar yang akan disimpan
-        print(f"Saving image as: {image_filename}")  # Memastikan nama file gambar yang akan disimpan
-
-        # Menyimpan gambar
-        img_data = requests.get(image_url).content
-        with open(image_filename, 'wb') as img_file:
-            img_file.write(img_data)
-
-        print(f"Image saved for {sanitized_title} in category {sanitized_category}")
-    except Exception as e:
-        print(f"Error saving image for {title}: {e}")
+    return {
+        'description': description,
+        'price_incl_tax': price_incl_tax,
+        'price_excl_tax': price_excl_tax,
+        'price_tax': price_tax,
+        'availability': availability
+    }
 
 # Fungsi untuk scraping beberapa halaman
 def scrape_multiple_pages(base_url, total_pages):
