@@ -22,14 +22,17 @@ def save_image(title, image_url, category):
         # Debugging kategori
         print(f"Category: {category}")  # Memastikan kategori yang diambil benar
         
-        # Mengunduh gambar ke folder kategori
-        sanitized_title = sanitize_filename(title)  # Sanitasi nama file jika perlu
+        # Sanitasi nama file untuk menghindari karakter tidak valid
+        sanitized_title = sanitize_filename(title)
         image_filename = f"{path}{sanitized_title}.jpg"  # Menentukan nama file gambar yang disimpan
         
-        # Mengunduh gambar menggunakan wget
-        wget.download(image_url, image_filename, bar=None)
-        
-        print(f"Image for {sanitized_title} saved in {category} folder.")
+        # Cek apakah gambar sudah ada di folder kategori
+        if not os.path.exists(image_filename):
+            # Mengunduh gambar menggunakan wget
+            wget.download(image_url, image_filename, bar=None)
+            print(f"Image for {sanitized_title} saved in {category} folder.")
+        else:
+            print(f"Image for {sanitized_title} already exists, skipping download.")
     
     except Exception as e:
         print(f"Error downloading image for {title}: {e}")
@@ -102,7 +105,7 @@ def scrape_links_of_books_in_category(category_links):
     return books_in_category
 
 # Fungsi untuk scraping data dari setiap halaman buku
-def scrape_books_from_page(url):
+def scrape_books_from_category_page(url):
     try:
         response = requests.get(url)
         response.raise_for_status()  # Memeriksa apakah permintaan berhasil
@@ -152,7 +155,7 @@ def scrape_multiple_pages(base_url, total_pages):
         else:
             url = f"{base_url}catalogue/page-{page}.html"  # Halaman berikutnya
         print(f"Scraping page {page}: {url}")
-        books = scrape_books_from_page(url)
+        books = scrape_books_from_category_page(url)
         if books:
             all_books.extend(books)
         time.sleep(1)  # Memberikan jeda untuk menghindari terlalu banyak request
@@ -162,7 +165,7 @@ def scrape_multiple_pages(base_url, total_pages):
 def category_info(links):
     information = []
     for link in links:
-        book_info = scrape_books_from_page(link)
+        book_info = scrape_books_from_category_page(link)
         information.append(book_info)
     return information
 
