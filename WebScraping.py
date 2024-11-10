@@ -5,6 +5,45 @@ import time
 import os
 # from WebImageScraping import save_image  # Pastikan ImageScraper.py tersedia dan berfungsi
 
+# Fungsi untuk mengambil data dari halaman detail buku
+def scrape_book_details(book_link):
+    try:
+        response = requests.get(book_link)
+        response.raise_for_status()  # Memeriksa apakah permintaan berhasil
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+        return {'description': 'No description available', 'price_incl_tax': 'N/A', 'price_excl_tax': 'N/A', 'price_tax': 'N/A'}
+
+    soup = BfS4(response.text, 'html.parser')
+
+    # Mengambil deskripsi produk
+    description = soup.find('meta', {'name': 'description'})
+    description = description['content'] if description else 'No description available'
+
+    # Mengambil harga produk (price including tax, price excluding tax, price tax)
+    price_incl_tax = 'N/A'
+    price_excl_tax = 'N/A'
+    price_tax = 'N/A'
+
+    price_incl_tax_elem = soup.find('th', text='Price (incl. tax)')
+    if price_incl_tax_elem:
+        price_incl_tax = price_incl_tax_elem.find_next_sibling('td').text.strip()
+
+    price_excl_tax_elem = soup.find('th', text='Price (excl. tax)')
+    if price_excl_tax_elem:
+        price_excl_tax = price_excl_tax_elem.find_next_sibling('td').text.strip()
+
+    price_tax_elem = soup.find('th', text='Tax')
+    if price_tax_elem:
+        price_tax = price_tax_elem.find_next_sibling('td').text.strip()
+
+    return {
+        'description': description,
+        'price_incl_tax': price_incl_tax,
+        'price_excl_tax': price_excl_tax,
+        'price_tax': price_tax
+    }
+
 # Fungsi untuk scraping data dari setiap halaman buku
 def scrape_books_from_page(url):
     try:
@@ -46,43 +85,24 @@ def scrape_books_from_page(url):
         # Mengambil kategori buku
         category = book.find_previous('ul', class_='breadcrumb').find_all('li')[-2].text.strip()
 
-        # Mengambil deskripsi produk (opsional, jika ada halaman detail)
-        description = book.find('meta', {'name': 'description'})
-        description = description['content'] if description else 'No description available'
-
-        # Harga produk (harga termasuk pajak, harga tanpa pajak, pajak)
-        price_incl_tax = 'N/A'
-        price_excl_tax = 'N/A'
-        price_tax = 'N/A'
-        
-        # Menambahkan pengecekan jika elemen harga ada sebelum mencoba mengambil sibling-nya
-        price_incl_tax_elem = book.find('th', text='Price (incl. tax)')
-        if price_incl_tax_elem:
-            price_incl_tax = price_incl_tax_elem.find_next_sibling('td').text.strip()
-
-        price_excl_tax_elem = book.find('th', text='Price (excl. tax)')
-        if price_excl_tax_elem:
-            price_excl_tax = price_excl_tax_elem.find_next_sibling('td').text.strip()
-
-        price_tax_elem = book.find('th', text='Tax')
-        if price_tax_elem:
-            price_tax = price_tax_elem.find_next_sibling('td').text.strip()
+        # Mengambil deskripsi produk dan harga dari halaman detail
+        details = scrape_book_details(book_link)
 
         # Menyimpan data buku dalam bentuk dictionary
         book_data.append({
             'Title': title,
             'price': price,
-            'Price including tax': price_incl_tax,
-            'Price excluding tax': price_excl_tax,
-            'Price Tax': price_tax,
+            'Price including tax': details['price_incl_tax'],
+            'Price excluding tax': details['price_excl_tax'],
+            'Price Tax': details['price_tax'],
             'Number available': availability,
             'Category': category,
             'Link': book_link,
             'Rating': rating,
-            'Product Description': description,
+            'Product Description': details['description'],
             'Image URL': image_url
         })
-
+        
         # Menyimpan gambar menggunakan fungsi dari ImageScraper.py
         # Pastikan ImageScraper.py ada dan fungsi save_image berfungsi dengan benar
         # save_image(image_url, title, category)
