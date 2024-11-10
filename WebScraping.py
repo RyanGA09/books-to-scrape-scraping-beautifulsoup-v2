@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup as BfS4
 import csv
 import time
 import os
-from WebImageScraping import save_image  # Mengimpor fungsi save_image dari ImageScraper.py
+# from WebImageScraping import save_image  # Pastikan ImageScraper.py tersedia dan berfungsi
 
 # Fungsi untuk scraping data dari setiap halaman buku
 def scrape_books_from_page(url):
@@ -43,20 +43,30 @@ def scrape_books_from_page(url):
         # Mengambil URL halaman detail buku
         book_link = 'https://books.toscrape.com/catalogue/' + book.h3.a['href'].replace('../../../', '')
 
-        # Mengambil kategori buku (menggunakan BeautifulSoup)
+        # Mengambil kategori buku
         category = book.find_previous('ul', class_='breadcrumb').find_all('li')[-2].text.strip()
 
-        # Mengambil deskripsi produk
+        # Mengambil deskripsi produk (opsional, jika ada halaman detail)
         description = book.find('meta', {'name': 'description'})
         description = description['content'] if description else 'No description available'
 
-        # Mengambil harga produk (price including tax, price excluding tax, price tax)
-        price_incl_tax = book.find('th', text='Price (incl. tax)').find_next_sibling('td').text
-        price_excl_tax = book.find('th', text='Price (excl. tax)').find_next_sibling('td').text
-        price_tax = book.find('th', text='Tax').find_next_sibling('td').text
+        # Harga produk (harga termasuk pajak, harga tanpa pajak, pajak)
+        price_incl_tax = 'N/A'
+        price_excl_tax = 'N/A'
+        price_tax = 'N/A'
         
-        # # Mengambil product description dan product information
-        # product_details = scrape_product_details(book_link)
+        # Menambahkan pengecekan jika elemen harga ada sebelum mencoba mengambil sibling-nya
+        price_incl_tax_elem = book.find('th', text='Price (incl. tax)')
+        if price_incl_tax_elem:
+            price_incl_tax = price_incl_tax_elem.find_next_sibling('td').text.strip()
+
+        price_excl_tax_elem = book.find('th', text='Price (excl. tax)')
+        if price_excl_tax_elem:
+            price_excl_tax = price_excl_tax_elem.find_next_sibling('td').text.strip()
+
+        price_tax_elem = book.find('th', text='Tax')
+        if price_tax_elem:
+            price_tax = price_tax_elem.find_next_sibling('td').text.strip()
 
         # Menyimpan data buku dalam bentuk dictionary
         book_data.append({
@@ -66,10 +76,6 @@ def scrape_books_from_page(url):
             'Price excluding tax': price_excl_tax,
             'Price Tax': price_tax,
             'Number available': availability,
-            # 'Price including tax': product_details['price_incl_tax'],
-            # 'Price excluding tax': product_details['price_excl_tax'],
-            # 'Price Tax': product_details['price_tax'],
-            # 'Number available': product_details['availability'],
             'Category': category,
             'Link': book_link,
             'Rating': rating,
@@ -77,7 +83,8 @@ def scrape_books_from_page(url):
             'Image URL': image_url
         })
 
-        # # Menyimpan gambar menggunakan fungsi dari ImageScraper.py
+        # Menyimpan gambar menggunakan fungsi dari ImageScraper.py
+        # Pastikan ImageScraper.py ada dan fungsi save_image berfungsi dengan benar
         # save_image(image_url, title, category)
 
     return book_data
@@ -92,37 +99,6 @@ def convert_rating_to_number(rating_class):
         'Five': 5
     }
     return rating_map.get(rating_class, 0)
-
-# # Fungsi untuk mengambil deskripsi produk dan informasi produk dari halaman detail
-# def scrape_product_details(url):
-#     try:
-#         response = requests.get(url)
-#         response.raise_for_status()  # Memeriksa apakah permintaan berhasil
-#     except requests.exceptions.RequestException as e:
-#         print(f"Error: {e}")
-#         return {'description': '', 'price_incl_tax': '', 'price_excl_tax': '', 'price_tax': '', 'availability': ''}
-
-#     soup = BfS4(response.text, 'html.parser')  # Menggunakan html.parser (built-in)
-
-#     # Mengambil deskripsi produk
-#     description = soup.find('meta', {'name': 'description'})
-#     description = description['content'] if description else 'No description available'
-
-#     # Mengambil harga produk (price including tax, price excluding tax, price tax)
-#     price_incl_tax = soup.find('th', text='Price (incl. tax)').find_next_sibling('td').text
-#     price_excl_tax = soup.find('th', text='Price (excl. tax)').find_next_sibling('td').text
-#     price_tax = soup.find('th', text='Tax').find_next_sibling('td').text
-
-#     # Mengambil informasi ketersediaan produk
-#     availability = soup.find('p', class_='instock availability').text.strip()
-
-    return {
-        'description': description,
-        'price_incl_tax': price_incl_tax,
-        'price_excl_tax': price_excl_tax,
-        'price_tax': price_tax,
-        'availability': availability
-    }
 
 # Fungsi untuk scraping beberapa halaman
 def scrape_multiple_pages(base_url, total_pages):
