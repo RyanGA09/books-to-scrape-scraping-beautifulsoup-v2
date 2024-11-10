@@ -6,6 +6,34 @@ import re
 import time
 from pathlib import Path
 
+# Fungsi untuk sanitasi nama folder atau file (menghilangkan karakter yang tidak valid)
+def sanitize_filename(name):
+    return re.sub(r'[<>:"/\\|?*]', '_', name)
+
+# Fungsi untuk menyimpan gambar dalam folder kategori
+def save_image(title, image_url, category):
+    # Tentukan path folder berdasarkan kategori
+    path = f"images/category/{category}/"
+    
+    # Membuat folder kategori jika belum ada
+    Path(path).mkdir(parents=True, exist_ok=True)
+
+    try:
+        # Debugging kategori
+        print(f"Category: {category}")  # Memastikan kategori yang diambil benar
+        
+        # Mengunduh gambar ke folder kategori
+        sanitized_title = sanitize_filename(title)  # Sanitasi nama file jika perlu
+        image_filename = f"{path}{sanitized_title}.jpg"  # Menentukan nama file gambar yang disimpan
+        
+        # Mengunduh gambar menggunakan wget
+        wget.download(image_url, image_filename, bar=None)
+        
+        print(f"Image for {sanitized_title} saved in {category} folder.")
+    
+    except Exception as e:
+        print(f"Error downloading image for {title}: {e}")
+
 # scrape all links of the categories even for multiple pages:
 def scraping_category():
     print("----------start category----------")
@@ -73,36 +101,6 @@ def scrape_links_of_books_in_category(category_links):
 
     return books_in_category
 
-
-# Fungsi untuk sanitasi nama folder atau file (menghilangkan karakter yang tidak valid)
-def sanitize_filename(name):
-    return re.sub(r'[<>:"/\\|?*]', '_', name)
-
-# Fungsi untuk menyimpan gambar dalam folder kategori
-def save_image(image_url, category, title):
-    # Tentukan path folder berdasarkan kategori
-    path = f"images/category/{category}/"
-    
-    # Membuat folder kategori jika belum ada
-    Path(path).mkdir(parents=True, exist_ok=True)
-
-    try:
-        # Debugging kategori
-        print(f"Category: {category}")  # Memastikan kategori yang diambil benar
-        
-        # Mengunduh gambar ke folder kategori
-        sanitized_title = sanitize_filename(title)  # Sanitasi nama file jika perlu
-        image_filename = f"{path}{sanitized_title}.jpg"  # Menentukan nama file gambar yang disimpan
-        
-        # Mengunduh gambar menggunakan wget
-        wget.download(image_url, image_filename, bar=None)
-        
-        print(f"Image for {sanitized_title} saved in {category} folder.")
-    
-    except Exception as e:
-        print(f"Error downloading image for {title}: {e}")
-        
-
 # Fungsi untuk scraping data dari setiap halaman buku
 def scrape_books_from_page(url):
     try:
@@ -129,11 +127,8 @@ def scrape_books_from_page(url):
         # Mengambil URL halaman detail buku
         book_link = 'https://books.toscrape.com/catalogue/' + book.h3.a['href'].replace('../../../', '')
 
-        # # Mengambil kategori buku (menggunakan BeautifulSoup)
-        # category = book.find_previous('ul', class_='breadcrumb').find_all('li')[-2].text.strip()
-
-        # category
-        category = soup.find("a", attrs={"href": re.compile("/category/books/")}).string
+        # Mengambil kategori buku (menggunakan BeautifulSoup)
+        category = soup.find("a", attrs={"href": re.compile("/category/books/")}).string.strip()
         
         # Menyimpan data buku dalam bentuk dictionary
         book_data.append({
@@ -142,8 +137,8 @@ def scrape_books_from_page(url):
             'Image URL': image_url
         })
 
-        # # Menyimpan gambar menggunakan fungsi dari ImageScraper.py
-        # save_image(image_url, title, category)
+        # Menyimpan gambar menggunakan fungsi dari ImageScraper.py
+        save_image(title, image_url, category)
 
     return book_data
 
@@ -169,8 +164,6 @@ def category_info(links):
     for link in links:
         book_info = scrape_books_from_page(link)
         information.append(book_info)
-        save_image(book_info['image_url'], book_info['category'])
-        
     return information
 
 # Press the green button in the gutter to run the script.

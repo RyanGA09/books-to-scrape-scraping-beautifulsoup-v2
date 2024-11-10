@@ -2,8 +2,6 @@ import requests
 from bs4 import BeautifulSoup as BfS4
 import csv
 import time
-import os
-# from WebImageScraping import save_image  # Pastikan ImageScraper.py tersedia dan berfungsi
 
 # Fungsi untuk mengambil data dari halaman detail buku
 def scrape_book_details(book_link):
@@ -80,7 +78,7 @@ def scrape_books_from_page(url):
         image_url = 'https://books.toscrape.com/' + image_url.replace('../', '')
 
         # Mengambil URL halaman detail buku
-        book_link = 'https://books.toscrape.com/catalogue/' + book.h3.a['href'].replace('../../../', '')
+        book_link = 'https://books.toscrape.com/catalogue/' + book.h3.a['href'].replace('../../../', '') + '/index.html'
 
         # Mengambil kategori buku
         category = book.find_previous('ul', class_='breadcrumb').find_all('li')[-2].text.strip()
@@ -103,7 +101,7 @@ def scrape_books_from_page(url):
             'Image URL': image_url
         })
         
-        # Menyimpan gambar menggunakan fungsi dari ImageScraper.py
+        # Menyimpan gambar menggunakan fungsi dari ImageScraper.py (opsional)
         # Pastikan ImageScraper.py ada dan fungsi save_image berfungsi dengan benar
         # save_image(image_url, title, category)
 
