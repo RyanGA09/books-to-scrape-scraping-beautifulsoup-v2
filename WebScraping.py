@@ -46,21 +46,34 @@ def scrape_books_from_page(url):
         # Mengambil kategori buku (menggunakan BeautifulSoup)
         category = book.find_previous('ul', class_='breadcrumb').find_all('li')[-2].text.strip()
 
-        # Mengambil product description dan product information
-        product_details = scrape_product_details(book_link)
+        # Mengambil deskripsi produk
+        description = book.find('meta', {'name': 'description'})
+        description = description['content'] if description else 'No description available'
+
+        # Mengambil harga produk (price including tax, price excluding tax, price tax)
+        price_incl_tax = book.find('th', text='Price (incl. tax)').find_next_sibling('td').text
+        price_excl_tax = book.find('th', text='Price (excl. tax)').find_next_sibling('td').text
+        price_tax = book.find('th', text='Tax').find_next_sibling('td').text
+        
+        # # Mengambil product description dan product information
+        # product_details = scrape_product_details(book_link)
 
         # Menyimpan data buku dalam bentuk dictionary
         book_data.append({
             'Title': title,
             'price': price,
-            'Price including tax': product_details['price_incl_tax'],
-            'Price excluding tax': product_details['price_excl_tax'],
-            'Price Tax': product_details['price_tax'],
-            'Number available': product_details['availability'],
+            'Price including tax': price_incl_tax,
+            'Price excluding tax': price_excl_tax,
+            'Price Tax': price_tax,
+            'Number available': availability,
+            # 'Price including tax': product_details['price_incl_tax'],
+            # 'Price excluding tax': product_details['price_excl_tax'],
+            # 'Price Tax': product_details['price_tax'],
+            # 'Number available': product_details['availability'],
             'Category': category,
             'Link': book_link,
             'Rating': rating,
-            'Product Description': product_details['description'],
+            'Product Description': description,
             'Image URL': image_url
         })
 
@@ -80,28 +93,28 @@ def convert_rating_to_number(rating_class):
     }
     return rating_map.get(rating_class, 0)
 
-# Fungsi untuk mengambil deskripsi produk dan informasi produk dari halaman detail
-def scrape_product_details(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Memeriksa apakah permintaan berhasil
-    except requests.exceptions.RequestException as e:
-        print(f"Error: {e}")
-        return {'description': '', 'price_incl_tax': '', 'price_excl_tax': '', 'price_tax': '', 'availability': ''}
+# # Fungsi untuk mengambil deskripsi produk dan informasi produk dari halaman detail
+# def scrape_product_details(url):
+#     try:
+#         response = requests.get(url)
+#         response.raise_for_status()  # Memeriksa apakah permintaan berhasil
+#     except requests.exceptions.RequestException as e:
+#         print(f"Error: {e}")
+#         return {'description': '', 'price_incl_tax': '', 'price_excl_tax': '', 'price_tax': '', 'availability': ''}
 
-    soup = BfS4(response.text, 'html.parser')  # Menggunakan html.parser (built-in)
+#     soup = BfS4(response.text, 'html.parser')  # Menggunakan html.parser (built-in)
 
-    # Mengambil deskripsi produk
-    description = soup.find('meta', {'name': 'description'})
-    description = description['content'] if description else 'No description available'
+#     # Mengambil deskripsi produk
+#     description = soup.find('meta', {'name': 'description'})
+#     description = description['content'] if description else 'No description available'
 
-    # Mengambil harga produk (price including tax, price excluding tax, price tax)
-    price_incl_tax = soup.find('th', text='Price (incl. tax)').find_next_sibling('td').text
-    price_excl_tax = soup.find('th', text='Price (excl. tax)').find_next_sibling('td').text
-    price_tax = soup.find('th', text='Tax').find_next_sibling('td').text
+#     # Mengambil harga produk (price including tax, price excluding tax, price tax)
+#     price_incl_tax = soup.find('th', text='Price (incl. tax)').find_next_sibling('td').text
+#     price_excl_tax = soup.find('th', text='Price (excl. tax)').find_next_sibling('td').text
+#     price_tax = soup.find('th', text='Tax').find_next_sibling('td').text
 
-    # Mengambil informasi ketersediaan produk
-    availability = soup.find('p', class_='instock availability').text.strip()
+#     # Mengambil informasi ketersediaan produk
+#     availability = soup.find('p', class_='instock availability').text.strip()
 
     return {
         'description': description,
