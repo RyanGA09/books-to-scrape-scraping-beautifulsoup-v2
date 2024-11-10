@@ -42,95 +42,68 @@ def scrape_book_details(book_link):
         'price_tax': price_tax
     }
 
-# Fungsi untuk scraping data dari setiap halaman buku
-def scrape_books_from_page(url):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Memeriksa apakah permintaan berhasil
-    except requests.exceptions.RequestException as e:
-        print(f"Error: {e}")
-        return []
+# Fungsi untuk mengambil link buku dari katalog
+def scrape_links_of_books_from_page(page_url):
+    books_in_page = []
+    response = requests.get(page_url)
+    if response.ok:
+        soup = BfS4(response.content, "html.parser")
+        # Ambil semua artikel dengan kelas "product_pod" yang berisi informasi buku
+        articles = soup.find_all("article", class_="product_pod")
+        for article in articles:
+            a = article.find("a")
+            a_link = a["href"]
+            # Membuat link lengkap ke halaman detail buku
+            books_in_page.append(f'http://books.toscrape.com/catalogue/{a_link.replace("../../../", "")}')
+    return books_in_page
 
-    soup = BfS4(response.text, 'html.parser')  # Menggunakan built-in html.parser
-
-    # Mengambil semua buku
-    books = soup.find_all('article', class_='product_pod')
-    book_data = []
-
-    for book in books:
-        # Mengambil judul buku
-        title = book.h3.a['title']
-
-        # Mengambil harga buku
-        price = book.find('p', class_='price_color').text
-
-        # Mengambil ketersediaan buku
-        availability = book.find('p', class_='instock availability').text.strip()
-
-        # Mengambil rating buku dan mengonversinya menjadi angka
-        rating_class = book.p['class']
-        rating = 0
-        if len(rating_class) > 1:
-            rating = convert_rating_to_number(rating_class[1])
-
-        # Mengambil URL gambar sampul
-        image_url = book.find('img')['src']
-        image_url = 'https://books.toscrape.com/' + image_url.replace('../', '')
-
-        # Mengambil URL halaman detail buku
-        book_link = 'https://books.toscrape.com/catalogue/' + book.h3.a['href'].replace('../../../', '') + '/index.html'
-
-        # Mengambil kategori buku
-        category = book.find_previous('ul', class_='breadcrumb').find_all('li')[-2].text.strip()
-
-        # Mengambil deskripsi produk dan harga dari halaman detail
+# Fungsi untuk mengambil data detail satu buku
+def scrape_book_data(book_link):
+    print(f"Scraping {book_link} ...")
+    response = requests.get(book_link)
+    if response.ok:
+        soup = BfS4(response.content, "html.parser")
+        image = soup.find("img")
+        image_url = image["src"].replace("../../", "http://books.toscrape.com/")  # Mengubah url relatif menjadi absolut
+        title = image["alt"]
+        price = soup.find('p', class_='price_color').text
+        availability = soup.find("th", text="Availability").find_next_sibling("td").string.strip()
+        rating = soup.find("p", attrs={'class': 'star-rating'}).get("class")[1]
         details = scrape_book_details(book_link)
-
-        # Menyimpan data buku dalam bentuk dictionary
-        book_data.append({
-            'Title': title,
-            'price': price,
-            'Price including tax': details['price_incl_tax'],
-            'Price excluding tax': details['price_excl_tax'],
-            'Price Tax': details['price_tax'],
-            'Number available': availability,
-            'Category': category,
-            'Link': book_link,
-            'Rating': rating,
-            'Product Description': details['description'],
-            'Image URL': image_url
-        })
         
-        # Menyimpan gambar menggunakan fungsi dari ImageScraper.py (opsional)
-        # Pastikan ImageScraper.py ada dan fungsi save_image berfungsi dengan benar
-        # save_image(image_url, title, category)
+        data = {
+            "Title": title,
+            "Price": price,
+            "Price including tax": details['price_incl_tax'],
+            "Price excluding tax": details['price_excl_tax'],
+            "Price Tax": details['price_tax'],
+            "Availability": availability,
+            "Product Description": details['description'],
+            "Rating": rating,
+            "Image URL": image_url,
+            "Link": book_link
+        }
+        return data
+    return None
 
-    return book_data
-
-# Fungsi untuk mengonversi rating menjadi angka
-def convert_rating_to_number(rating_class):
-    rating_map = {
-        'One': 1,
-        'Two': 2,
-        'Three': 3,
-        'Four': 4,
-        'Five': 5
-    }
-    return rating_map.get(rating_class, 0)
-
-# Fungsi untuk scraping beberapa halaman
-def scrape_multiple_pages(base_url, total_pages):
+# Fungsi untuk scraping buku dari beberapa halaman katalog
+def scrape_books_from_pages(base_url, total_pages):
     all_books = []
-
     for page in range(1, total_pages + 1):
         if page == 1:
             url = base_url  # Halaman pertama
         else:
             url = f"{base_url}catalogue/page-{page}.html"  # Halaman berikutnya
+
         print(f"Scraping page {page}: {url}")
-        books = scrape_books_from_page(url)
-        if books:
-            all_books.extend(books)
+        
+        # Ambil semua link buku dari halaman ini
+        books_in_page = scrape_links_of_books_from_page(url)
+        for book_link in books_in_page:
+            book_data = scrape_book_data(book_link)
+            if book_data:
+                all_books.append(book_data)
+
         time.sleep(1)  # Memberikan jeda untuk menghindari terlalu banyak request
 
     return all_books
@@ -148,8 +121,16 @@ def save_to_csv(data, filename):
         writer.writerows(data)
     print(f"Data saved to {filename}")
 
+# Fungsi utama untuk memulai proses scraping
+def main():
+    base_url = 'http://books.toscrape.com/'  # URL dasar untuk katalog buku
+    total_pages = 3  # Jumlah halaman yang ingin di-scrape, bisa Anda ubah sesuai kebutuhan
+    
+    # Scrape buku dari beberapa halaman
+    books_data = scrape_books_from_pages(base_url, total_pages)
+
+    # Simpan hasil ke file CSV
+    save_to_csv(books_data, 'books_data.csv')
+
 if __name__ == "__main__":
-    base_url = 'https://books.toscrape.com/'  # URL dasar dari website
-    total_pages = 3  # Ubah sesuai jumlah halaman yang ingin di-scrape
-    books_data = scrape_multiple_pages(base_url, total_pages)  # Scrape beberapa halaman
-    save_to_csv(books_data, 'books_data.csv')  # Simpan hasil ke CSV
+    main()
