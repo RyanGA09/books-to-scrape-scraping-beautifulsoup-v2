@@ -3,32 +3,31 @@ from bs4 import BeautifulSoup as BfS4
 import wget
 import os
 import re
-import time
 from pathlib import Path
 
-# Fungsi untuk sanitasi nama folder atau file (menghilangkan karakter yang tidak valid)
+# Function for folder or file name sanitization (removes invalid characters)
 def sanitize_filename(name):
     return re.sub(r'[<>:"/\\|?*]', '_', name)
 
-# Fungsi untuk menyimpan gambar dalam folder kategori
+#  Function to save images in a category folder
 def save_image(title, image_url, category):
-    # Tentukan path folder berdasarkan kategori
+    #  Specify folder path by category
     path = f"images/category/{category}/"
     
-    # Membuat folder kategori jika belum ada
+    # Create a category folder if it doesn't already exist
     Path(path).mkdir(parents=True, exist_ok=True)
 
     try:
-        # Debugging kategori
-        print(f"Category: {category}")  # Memastikan kategori yang diambil benar
+        # Debugging category
+        print(f"Category: {category}")  #  Ensure the correct category is taken
         
-        # Sanitasi nama file untuk menghindari karakter tidak valid
+        #  Sanitize file names to avoid invalid characters
         sanitized_title = sanitize_filename(title)
-        image_filename = f"{path}{sanitized_title}.jpg"  # Menentukan nama file gambar yang disimpan
+        image_filename = f"{path}{sanitized_title}.jpg"  # Specify the file name of the saved image
         
-        # Cek apakah gambar sudah ada di folder kategori
+        # Check if the image is already in the category folder
         if not os.path.exists(image_filename):
-            # Mengunduh gambar menggunakan wget
+            # Downloading images using wget
             wget.download(image_url, image_filename, bar=None)
             print(f"Image for {sanitized_title} saved in {category} folder.")
         else:
@@ -104,43 +103,43 @@ def scrape_links_of_books_in_category(category_links):
 
     return books_in_category
 
-# Fungsi untuk scraping data dari setiap halaman buku
+# Function for scraping data from each book page
 def scrape_books_from_category_page(url):
     try:
         response = requests.get(url)
-        response.raise_for_status()  # Memeriksa apakah permintaan berhasil
+        response.raise_for_status()  # Check if the request was successful
     except requests.exceptions.RequestException as e:
         print(f"Error: {e}")
         return []
 
-    soup = BfS4(response.text, 'html.parser')  # Menggunakan built-in html.parser
+    soup = BfS4(response.text, 'html.parser')  # Using the built-in html.parser
 
-    # Mengambil semua buku
+    # Retrieve all the books
     books = soup.find_all('article', class_='product_pod')
     book_data = []
 
     for book in books:
-        # Mengambil judul buku
+        # Retrieve the book titles
         title = book.h3.a['title']
 
-        # Mengambil URL gambar sampul
+        # Retrieve Cover image URL
         image = book.find('img')['src']
         image_url = image.replace("../../", "http://books.toscrape.com/")
 
-        # Mengambil URL halaman detail buku
+        # Retrieve URL of book detail page
         book_link = 'https://books.toscrape.com/catalogue/' + book.h3.a['href'].replace('../../../', '')
 
-        # Mengambil kategori buku (menggunakan BeautifulSoup)
+        # Retrieve book category (using BeautifulSoup)
         category = soup.find("a", attrs={"href": re.compile("/category/books/")}).string.strip()
         
-        # Menyimpan data buku dalam bentuk dictionary
+        # Store book data in dictionary form
         book_data.append({
             'Title': title,
             'Category': category,
             'Image URL': image_url
         })
 
-        # Menyimpan gambar menggunakan fungsi dari ImageScraper.py
+        # Save the image using the function from ImageScraper.py
         save_image(title, image_url, category)
 
     return book_data
@@ -157,9 +156,6 @@ if __name__ == '__main__':
     # start the program:
     # get first all categories with category_scrape:
     all_categories = scraping_category()
-    
-    # Menyimpan gambar menggunakan fungsi dari ImageScraper.py
-    # save_image(image_url, title, category)
     
     links = scrape_links_of_books_in_category(all_categories)
     

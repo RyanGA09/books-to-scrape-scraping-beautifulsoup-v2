@@ -123,6 +123,14 @@ Run the script to start scraping:
 - Detailed Metadata: Additional book information such as pricing (including and excluding tax) and product descriptions are scraped.
 - Flexible Data Saving: Data is stored in a CSV file with all relevant details, making it easier to analyze and process.
 
+## Read More
+
+Check out my article on Medium:
+
+<a href="https://medium.com/@ryangadingabdullah/article-title" target="blank">
+    <img src="https://img.shields.io/badge/Medium-Check%20Out-000000?logo=medium&style=for-the-badge" alt="Check out on Medium" />
+</a>
+
 ## License
 
 [MIT LICENSE](LICENSE)
