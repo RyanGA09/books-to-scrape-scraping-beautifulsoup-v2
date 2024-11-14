@@ -145,23 +145,6 @@ def scrape_books_from_category_page(url):
 
     return book_data
 
-# Fungsi untuk scraping beberapa halaman
-def scrape_multiple_pages(base_url, total_pages):
-    all_books = []
-
-    for page in range(1, total_pages + 1):
-        if page == 1:
-            url = base_url  # Halaman pertama
-        else:
-            url = f"{base_url}catalogue/page-{page}.html"  # Halaman berikutnya
-        print(f"Scraping page {page}: {url}")
-        books = scrape_books_from_category_page(url)
-        if books:
-            all_books.extend(books)
-        time.sleep(1)  # Memberikan jeda untuk menghindari terlalu banyak request
-
-    return all_books
-
 def category_info(links):
     information = []
     for link in links:
