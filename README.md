@@ -1,4 +1,4 @@
-# Books to Scrape - Scraping: Advanced Version (V2)
+# Books to Scrape - Scraping Using BeautifulSoup: Advanced Version (V2)
 
 <div align="center">
    <img src="images/titles-picture-logo.png" alt="Scraping Book Data from Books to Scrape">
@@ -65,13 +65,13 @@ Run the script to start scraping:
    - Scraping Image
 
      ```bash
-         python WebImageScraping.py
+      python WebImageScraping.py
      ```
 
    - Scraping Data
 
      ```bash
-         python WebDataScraping.py
+      python WebDataScraping.py
      ```
 
 2. On Notebook:
@@ -79,7 +79,7 @@ Run the script to start scraping:
    1. Start Jupyter Notebook:
 
       ```bash
-         jupyter notebook
+      jupyter notebook
       ```
 
    2. Open `WebScrapingExperiment.ipynb` in the Jupyter interface and run the cells sequentially.
