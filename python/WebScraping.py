@@ -48,13 +48,16 @@ def scrape_links_of_books_from_page(page_url):
     response = requests.get(page_url)
     if response.ok:
         soup = BfS4(response.content, "html.parser")
+        
         # Take all the articles with the "product_pod" class that contains the book's information
         articles = soup.find_all("article", class_="product_pod")
         for article in articles:
             a = article.find("a")
             a_link = a["href"]
+            
             # Create a full link to the book's detail page
             books_in_page.append(f'http://books.toscrape.com/catalogue/{a_link.replace("../../../", "")}')
+            
     return books_in_page
 
 # Function to retrieve the detailed data of a single book
@@ -83,7 +86,9 @@ def scrape_book_data(book_link):
             "Image URL": image_url,
             "Link": book_link
         }
+        
         return data
+    
     return None
 
 # Functions for scraping books from multiple catalog pages
@@ -91,13 +96,13 @@ def scrape_books_from_pages(base_url, total_pages):
     all_books = []
     for page in range(1, total_pages + 1):
         if page == 1:
-            url = base_url  # Halaman pertama
+            url = base_url  # First page
         else:
-            url = f"{base_url}catalogue/page-{page}.html"  # Halaman berikutnya
+            url = f"{base_url}catalogue/page-{page}.html"  # Next page
 
         print(f"Scraping page {page}: {url}")
         
-        # Ambil semua link buku dari halaman ini
+        # Retrieve all book links from this page
         books_in_page = scrape_links_of_books_from_page(url)
         for book_link in books_in_page:
             book_data = scrape_book_data(book_link)
@@ -128,7 +133,6 @@ def main():
     
     # Scrape a book from multiple pages
     books_data = scrape_books_from_pages(base_url, total_pages)
-
     # Save the results to a CSV file
     save_to_csv(books_data, 'books_data.csv')
 

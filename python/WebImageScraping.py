@@ -59,8 +59,8 @@ def scraping_category():
                 response = requests.get(link)
                 if response.ok:
                     soup = BfS4(response.content, "html.parser")
-                    # check if for a next page, take the info: page 1 of 2:
                     next_page = soup.findAll('ul', class_='pager')
+                    # check if for a next page, take the info: page 1 of 2:
                     if next_page:
                         for page in next_page:
                             all_num_page = page.find("li", class_="current").text
@@ -76,13 +76,13 @@ def scraping_category():
 
         # start from the second link in the list:
         links_of_categories = links_of_categories_all[1:]
+        
         # all links including multiple pages
         return links_of_categories
 
 # get all links of the books in one category:
 def scrape_links_of_books_in_category(category_links):
     print("----------start books in category----------")
-    print(" Please wait ... ")
     # read information to get the book link of each book in one category:
     # create a list for all links of books inside a category:
     books_in_category = []
@@ -126,9 +126,6 @@ def scrape_books_from_category_page(url):
         image = book.find('img')['src']
         image_url = image.replace("../../", "http://books.toscrape.com/")
 
-        # Retrieve URL of book detail page
-        book_link = 'https://books.toscrape.com/catalogue/' + book.h3.a['href'].replace('../../../', '')
-
         # Retrieve book category (using BeautifulSoup)
         category = soup.find("a", attrs={"href": re.compile("/category/books/")}).string.strip()
         
@@ -151,12 +148,14 @@ def category_info(links):
         information.append(book_info)
     return information
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
+# Main functions to start the scraping process
+def main():
     # start the program:
     # get first all categories with category_scrape:
     all_categories = scraping_category()
-    
     links = scrape_links_of_books_in_category(all_categories)
-    
     category_info(links)
+
+# Run the script.
+if __name__ == '__main__':
+    main()
