@@ -1,8 +1,6 @@
 # Books to Scrape - Scraping Using BeautifulSoup: Advanced Version (V2)
 
-<div align="center">
-   <img src="images/titles-picture-logo.png" alt="Scraping Book Data & Images from Books to Scrape">
-</div>
+
 
 This Python script is an advanced version of the Books to Scrape scraper. It extends the basic functionality of scraping book data from the [Books to Scrape](https://books.toscrape.com/) website by adding more features, including category-wise image downloads, multiple-page scraping, and handling of additional metadata like product descriptions and pricing details. The scraper collects extensive details about books, such as titles, prices, ratings, availability, descriptions, and cover image URLs. It then saves the data into a CSV file and downloads the images into categorized folders.
 
