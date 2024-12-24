@@ -19,19 +19,19 @@ This Python script is an advanced version of the Books to Scrape scraper. It ext
 1. Clone the repository:
 
    ```bash
-      git clone https://github.com/RyanGA09/books-to-scrape-scraping-v2.git
+   git clone https://github.com/RyanGA09/books-to-scrape-scraping-beautifulsoup-v2.git
    ```
 
 2. Navigate to the project directory:
 
    ```bash
-      cd books-to-scrape-scraping-v2
+   cd books-to-scrape-scraping-beautifulsoup-v2
    ```
 
 3. Create a virtual environment:
 
    ```bash
-      python3 -m venv venv
+   python3 -m venv venv
    ```
 
 4. Activate Virtual Environment:
@@ -39,7 +39,7 @@ This Python script is an advanced version of the Books to Scrape scraper. It ext
    - On Linux/MacOS:
 
    ```bash
-      source venv/bin/activate # On Linux
+   source venv/bin/activate # On Linux
    ```
 
    - On Windows:
@@ -51,7 +51,7 @@ This Python script is an advanced version of the Books to Scrape scraper. It ext
 5. Install the required dependencies:
 
    ```bash
-      pip install -r requirements.txt
+   pip install -r requirements.txt
    ```
 
 ## Usage
@@ -143,6 +143,6 @@ Check out my article on Medium:
 
 ## License
 
-[MIT LICENSE](LICENSE)
+&copy; 2024 Ryan Gading Abdullah. All rights reserved.
 
-&copy;2024 Ryan Gading Abdullah. All rights reserved.
+This project is licensed under the MIT License - see the [MIT LICENSE](LICENSE) for details.
