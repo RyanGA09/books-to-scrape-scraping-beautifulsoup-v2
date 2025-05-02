@@ -4,6 +4,8 @@
    <img src="images/titles-picture-logo.png" alt="Scraping Book Data & Images from Books to Scrape">
 </div>
 
+</br>
+
 [![License: MIT License](https://img.shields.io/badge/license-MIT%20License-blue?style=for-the-badge)](LICENSE) [![Made with Python](https://img.shields.io/badge/Made%20with-Python-3776AB?logo=python&style=for-the-badge)](https://www.python.org/) [![Made with Jupyter Notebook](https://img.shields.io/badge/Made%20with-Jupyter%20Notebook-orange?logo=jupyter&style=for-the-badge)](https://jupyter.org/)
 
 This Python script is an advanced version of the Books to Scrape scraper. It extends the basic functionality of scraping book data from the [Books to Scrape](https://books.toscrape.com/) website by adding more features, including category-wise image downloads, multiple-page scraping, and handling of additional metadata like product descriptions and pricing details. The scraper collects extensive details about books, such as titles, prices, ratings, availability, descriptions, and cover image URLs. It then saves the data into a CSV file and downloads the images into categorized folders.
@@ -102,13 +104,13 @@ Run the script to start scraping:
       jupyter notebook
       ```
 
-   2. Open `WebScrapingExperiment.ipynb` in the Jupyter interface and run the cells sequentially.
+   2. Open `WebScrapingExperiment.ipynb` &  `WebImageScrapingExperiment.ipynb` in the Jupyter interface and run the cells sequentially.
 
       This notebook allows for interactive scraping and image downloading.
 
       **💡 Note:**
 
-      If you are developing using Visual Studio Code (VSCode), PyCharm, or any other external IDE, you don't have to run the _jupyter notebook_ command. Simply open the notebook file (`WebScrapingExperiment.ipynb`) directly inside your IDE, then run the code directly from there without the need to open Jupyter Notebook through a browser.
+      If you are developing using Visual Studio Code (VSCode), PyCharm, or any other external IDE, you don't have to run the _jupyter notebook_ command. Simply open the notebook file (`WebScrapingExperiment.ipynb` &  `WebImageScrapingExperiment.ipynb`) directly inside your IDE, then run the code directly from there without the need to open Jupyter Notebook through a browser.
 
 ## 🧠 How It Works
 
